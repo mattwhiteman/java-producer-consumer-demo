@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'demo.newrelic'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    archiveFileName.set 'newrelic-number-logger.jar'
+    manifest {
+        attributes 'Main-Class': 'demo.newrelic.numberlogger.Application'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+dependencies {
+    compile 'commons-io:commons-io:2.8.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.11.2'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.11.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+tasks.getByName("assemble").dependsOn("packageSimulator")
+
+task packageSimulator(type: Jar) {
+    archiveFileName.set 'clientSimulator.jar'
+    manifest {
+        attributes 'Main-Class': 'demo.newrelic.numberlogger.scenarios.NumberCreatorSimulator'
+    }
+    from {
+        sourceSets.test.output
+    }
+}
