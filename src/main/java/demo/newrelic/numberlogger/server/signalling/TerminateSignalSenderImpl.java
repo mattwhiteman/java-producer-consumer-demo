@@ -2,6 +2,7 @@ package demo.newrelic.numberlogger.server.signalling;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class starts a high-priority thread that sleeps until it receives a signal to
@@ -18,9 +19,14 @@ public class TerminateSignalSenderImpl implements TerminateSignalSender {
     // Thread that handles the signaling to all registered clients
     private final Thread signalHandlerThread;
 
+    // Used to help prevent spurious wakeups
+    private final AtomicBoolean signalCondition;
+
     public TerminateSignalSenderImpl() {
         serverTerminateSignal = new Object();
         signalReceiverList = new LinkedList<>();
+
+        signalCondition = new AtomicBoolean(false);
 
         // Run this thread at highest priority to ensure all clients get
         // the termination notice as quickly as possible once the thread
@@ -55,17 +61,23 @@ public class TerminateSignalSenderImpl implements TerminateSignalSender {
 
     public void signalServerStop() {
         synchronized(serverTerminateSignal) {
+            // Set the signal value before notifying to satisfy spurious wakeup pattern
+            signalCondition.set(true);
             serverTerminateSignal.notify();
         }
     }
 
     private void doWait() {
         synchronized (serverTerminateSignal) {
-            try {
-                serverTerminateSignal.wait();
-                sendTerminationSignal();
-            } catch (InterruptedException ignored) {
+            // This pattern prevents spurious wakeups. If one occurs, the thread will re-wait since
+            // the signal condition was not set.
+            while(!signalCondition.get()) {
+                try {
+                    serverTerminateSignal.wait();
+                } catch (InterruptedException ignored) {
+                }
             }
+            sendTerminationSignal();
         }
     }
 
