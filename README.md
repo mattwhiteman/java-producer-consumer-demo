@@ -56,7 +56,8 @@ To run the server from the project root after building with the above gradle com
 
 Unit tests for several modules are run as part of the gradle build process. Gradle will also build a test jar that can
 be used for simulating input data to a running server. This jar is named 'clientSimulator.jar' and will be in the
-build/libs directory along with the main server jar.
+build/libs directory along with the main server jar. Note that the simulator does *not* start a server instance and this
+must be done manually by the user.
 
 The clientSimulator jar can run 3 different test scenarios and supports several parameter flags for each. To execute a
 particular scenario, provide the name (basic, endsingle, endmulti) as a command line parameter when running the jar. By

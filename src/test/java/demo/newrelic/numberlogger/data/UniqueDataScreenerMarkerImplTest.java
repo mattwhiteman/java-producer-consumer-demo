@@ -2,8 +2,7 @@ package demo.newrelic.numberlogger.data;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UniqueDataScreenerMarkerImplTest {
 
@@ -34,5 +33,33 @@ public class UniqueDataScreenerMarkerImplTest {
 
         assertTrue(underTest.isUnique(111231));
         assertFalse(underTest.isUnique(111231));
+    }
+
+    @Test
+    public void testEdgeCases() {
+        UniqueDataScreenerMarkerImpl underTest = new UniqueDataScreenerMarkerImpl();
+        assertTrue(underTest.isUnique(0));
+        assertFalse(underTest.isUnique(0));
+
+        assertTrue(underTest.isUnique(999999999));
+        assertFalse(underTest.isUnique(999999999));
+    }
+
+    @Test
+    public void testIllegalConstructorArgument() {
+        try {
+            new UniqueDataScreenerMarkerImpl(-1);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // Passes by default
+        }
+    }
+
+    @Test
+    public void testIllegalInput() {
+        UniqueDataScreenerMarkerImpl underTest = new UniqueDataScreenerMarkerImpl();
+
+        assertFalse(underTest.isUnique(1000000000));
+        assertFalse(underTest.isUnique(-1));
     }
 }

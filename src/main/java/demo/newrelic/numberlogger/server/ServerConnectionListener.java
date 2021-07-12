@@ -58,7 +58,8 @@ public class ServerConnectionListener implements TerminateSignalReceiver {
         }
         finally {
             try {
-                threadPoolExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+                // Wait for the thread pool to finish for 1 second.
+                threadPoolExecutor.awaitTermination(ApplicationConstants.THREADPOOL_EXPECTED_SHUTDOWN_TIME_MS, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ignored) {
             }
         }

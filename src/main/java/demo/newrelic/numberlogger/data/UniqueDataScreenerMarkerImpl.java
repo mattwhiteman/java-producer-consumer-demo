@@ -1,8 +1,11 @@
 package demo.newrelic.numberlogger.data;
 
+import demo.newrelic.numberlogger.constants.ApplicationConstants;
+
 /**
  * Implementation of the UniqueDataScreener that optimizes memory usage. The data
- * is assumed to be any non-negative integer between 0 and 999999999. This means that there
+ * is assumed to be any non-negative integer between 0 and the constructor value, which
+ * by default is 999999999. In default conditions (and the requirements for this app) means that there
  * are 1 billion possible data points. The only information that needs to be stored is a marker
  * to indicate whether it has been seen, which requires only 1 bit of information. Because the
  * data falls in a fixed continuous range, markers for all 1 billion values can be visualized as
@@ -18,16 +21,44 @@ package demo.newrelic.numberlogger.data;
  * unique values will surpass this threshold, so this marker implementation will be used internally.
  */
 public class UniqueDataScreenerMarkerImpl implements UniqueDataScreener {
-
-    private static final int NUM_DATA_MARKER_BUCKETS = 1000000000 / 8;
+    private final int maxValueInclusive;
     private final byte[] dataMarkers;
 
     public UniqueDataScreenerMarkerImpl() {
-        dataMarkers = new byte[NUM_DATA_MARKER_BUCKETS];
+        this(ApplicationConstants.MAX_INPUT_VALUE_INTEGER);
+    }
+
+    /**
+     * Constructs the screener object to include values 0 to maxValue (inclusive)
+     * @param maxValue
+     */
+    public UniqueDataScreenerMarkerImpl(int maxValue) {
+        if (maxValue < 0) {
+            throw new IllegalArgumentException("UniqueDataScreenerMarkerImpl cannot be constructed with a negative parameter");
+        }
+
+        this.maxValueInclusive = maxValue;
+        int numDataMarkerBuckets = maxValueInclusive / 8;
+        if (maxValueInclusive % 8 > 0) {
+            numDataMarkerBuckets++;
+        }
+        dataMarkers = new byte[numDataMarkerBuckets];
     }
 
     @Override
+    /**
+     * Returns whether a particular number has already been seen or not. If an invalid value is provided
+     * (less than 0 or greater than the max value the object was initialized with), false is returned
+     * and the input is discarded so as to prevent an exception.
+     */
     public boolean isUnique(int data) {
+
+        if (data < 0 || data > maxValueInclusive) {
+            // This case should not happen as other modules in the app are responsible for sanitizing invalid inputs
+            // before it reaches here. Best practices dictate ensuring clean input though. If logging is added to
+            // the application in the future, add an error log.
+            return false;
+        }
 
         // The byte index is the data's value divided by 8 (8 bits per byte), discarding remainder.
         // Shift right 3 is equivalent and is slightly more efficient than division
