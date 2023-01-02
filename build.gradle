@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'demo.newrelic'
+group 'demo.producerconsumer'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -10,9 +10,9 @@ repositories {
 }
 
 jar {
-    archiveFileName.set 'newrelic-number-logger.jar'
+    archiveFileName.set 'java-producer-consumer-demo.jar'
     manifest {
-        attributes 'Main-Class': 'demo.newrelic.numberlogger.Application'
+        attributes 'Main-Class': 'demo.producerconsumer.Application'
     }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
@@ -34,9 +34,9 @@ test {
 tasks.getByName("assemble").dependsOn("packageSimulator")
 
 task packageSimulator(type: Jar) {
-    archiveFileName.set 'clientSimulator.jar'
+    archiveFileName.set 'producerSimulator.jar'
     manifest {
-        attributes 'Main-Class': 'demo.newrelic.numberlogger.scenarios.NumberCreatorSimulator'
+        attributes 'Main-Class': 'demo.producerconsumer.scenarios.NumberCreatorSimulator'
     }
     from {
         sourceSets.test.output
